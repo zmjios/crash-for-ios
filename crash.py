@@ -1,25 +1,44 @@
 #!/usr/bin/python
 #-*- coding: utf-8 -*-
 #encoding=utf-8
-#author = zengmingjian
+__author__ = 'zengmingjian'
 
 import os
+import sys
+import commands
 
-def crashFileValid(fileName):
-	st,out=commands.getstatusoutput("dwarfdump --uuid IHexin.app.dSYM/")
-	return True
+def crashFileValid(excuteFile,dsymFile):
+	excuteCmd =  "dwarfdump --uuid " + excuteFile + "/" + excuteFile[0:len(excuteFile) - 4]
+	print excuteCmd
+	dsymCmd = "dwarfdump --uuid " + dsymFile
+	lines1 = os.popen(excuteCmd).readlines()
+	lines2 = os.popen(dsymCmd).readlines()
+	for line in lines1:
+		uuidString1 = line.split(' ')[1]
+	for line in lines2:
+		uuidString2 = line.split(' ')[1]
+	if (uuidString1 == uuidString2):
+		print ("uuidString = " + uuidString1)
+		return True
+	else:
+		print ("uuidString1 = " + uuidString1)
+		print ("uuidString2 = " + uuidString2)
+		print("!!!!!dsym 文件 和 可执行app文件不匹配！！！！！")
+		return False
 
 #解析设置环境
 def setEnvironment():
-	os.system("export DEVELOPER_DIR=" + "/Applications/Xcode.app/Contents/Developer/")
-	os.system("export PATH=" + "$PATH:/Applications/Xcode.app/Contents/SharedFrameworks/DTDeviceKitBase.framework/Versions/A/Resources")
-
+	os.environ["DEVELOPER_DIR"]="/Applications/Xcode.app/Contents/Developer/"  #DISPLAY是环境变量名，：0.0是要设置的值
+	os.system('$DEVELOPER_DIR')
+	
 #检测是否存在symbolicatecrash工具，如果不存在，则在xcode拷贝到当前目录
 def getSymbolicatecrashTool():
 	currentDir = os.getcwd()
 	symbolDir = "/Applications/Xcode.app/Contents/SharedFrameworks/DTDeviceKitBase.framework/Versions/A/Resources/symbolicatecrash"
 	for root,dirs,files in os.walk(currentDir):
 		if os.path.exists(root + "/" + "symbolicatecrash"):
+			print("=================")
+			setEnvironment()
 			return
 		else:
 			os.system("cp " + symbolDir + " " + currentDir)
@@ -49,6 +68,8 @@ def parseCrashLog():
 		return
 
 	#检测dsym文件 和app文件是否匹配
+	if (crashFileValid(appName, dsymName) == False):
+		return
 
 	for crashFile in crashList:
 		if crashFile.endswith(".crash"):
@@ -58,13 +79,13 @@ def parseCrashLog():
 		elif crashFile.endswith(".ips"):
 			os.system("./symbolicatecrash "+ crashFile + " " + dsymName +" >> " + crashFile.replace(".ips",".log"))
 
-def start():
+def startPaser():
 	getSymbolicatecrashTool()
 	parseCrashLog()
 
 
 if __name__ == '__main__':
-	start()
+	startPaser()
 
 
 
