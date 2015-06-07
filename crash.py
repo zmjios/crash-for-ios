@@ -8,6 +8,8 @@ import sys
 import commands
 
 def crashFileValid(excuteFile,dsymFile):
+	if len(excuteFile) < 4:
+		return
 	excuteCmd =  "dwarfdump --uuid " + excuteFile + "/" + excuteFile[0:len(excuteFile) - 4]
 	print excuteCmd
 	dsymCmd = "dwarfdump --uuid " + dsymFile
