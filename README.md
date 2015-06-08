@@ -1,0 +1,2 @@
+# crash-for-ios
+只需将crash的文件和crash文件对应的app二进制包以及dsym文件放入到同一个文件夹下，然后在命令行中刚进入改文件夹，运行python脚本crash.py即可。
